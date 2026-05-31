@@ -1,3 +1,18 @@
+'use strict';
+
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Flutterwave payment service with mock mode and live-mode switch points.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 const axios = require("axios");
 require("dotenv").config();
 

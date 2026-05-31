@@ -1,3 +1,20 @@
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Global Tailwind and base frontend styles.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+/* ========================================================
+   Styles and visual configuration
+   ======================================================== */
+
+/* ========================================================
+   Styles and visual configuration
+   ======================================================== */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

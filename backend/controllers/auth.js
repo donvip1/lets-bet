@@ -1,3 +1,18 @@
+'use strict';
+
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Authentication controller for user registration, login, and profile access.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");

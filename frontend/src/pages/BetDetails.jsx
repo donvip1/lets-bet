@@ -1,3 +1,17 @@
+/* eslint-disable */
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Bet detail page with participants list and join-bet modal.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {

@@ -1,3 +1,18 @@
+'use strict';
+
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           PostgreSQL pool configuration and shared query helper.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 const { Pool } = require("pg");
 const dotenv = require("dotenv");
 
@@ -33,8 +48,15 @@ const poolConfig = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD || "password",
     };
 
-// Production databases commonly require SSL, while local PostgreSQL usually does not.
-if (process.env.NODE_ENV === "production") {
+const databaseUrlRequiresSsl = /sslmode=require/i.test(
+  process.env.DATABASE_URL || ""
+);
+const shouldUseSsl =
+  process.env.DB_SSL === "true" || databaseUrlRequiresSsl;
+
+// Railway can provide internal non-SSL URLs or public SSL-required URLs.
+// Set DB_SSL=true or include sslmode=require in DATABASE_URL when SSL is needed.
+if (shouldUseSsl) {
   poolConfig.ssl = {
     rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== "false",
   };

@@ -1,3 +1,18 @@
+'use strict';
+
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Wallet controller for balances, deposits, withdrawals, and transaction history.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 const Wallet = require("../models/Wallet");
 
 const SUPPORTED_CURRENCIES = new Set(["ngn", "usd", "btc", "eth"]);

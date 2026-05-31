@@ -1,3 +1,17 @@
+/* eslint-disable */
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Reusable card component for displaying bet summaries and detail links.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 

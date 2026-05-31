@@ -1,3 +1,16 @@
+-- *********************************************************
+-- Author:                Philip Awazie Donvip
+-- Year Created:          2026
+-- Description:           PostgreSQL schema for users, wallets, bets, participants, transactions, and KYC documents.
+-- Modified By:           Philip Awazie Donvip
+-- Modified Date:         2026-05-31
+-- Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+-- *********************************************************
+
+-- ========================================================
+-- Database extensions, tables, constraints, and indexes
+-- ========================================================
+
 -- Lets Bet PostgreSQL schema.
 -- pgcrypto provides gen_random_uuid() for UUID primary keys.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

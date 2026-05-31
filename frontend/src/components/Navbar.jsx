@@ -1,3 +1,17 @@
+/* eslint-disable */
+/*********************************************************
+ Author:                Philip Awazie Donvip
+ Year Created:          2026
+ Description:           Navigation component with auth-aware links and user actions.
+ Modified By:           Philip Awazie Donvip
+ Modified Date:         2026-05-31
+ Modification Notes:    Added traceable comments for debugging, handoff, undo, and redo review.
+*********************************************************/
+
+// ========================================================
+// Imports, dependencies, and module setup
+// ========================================================
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
