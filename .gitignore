@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Local database files
+backend/database/pgdata/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+frontend/.git-backup/
+
+# Build files
+dist/
+build/
+.next/
+
+# Testing
+coverage/
+.nyc_output/
