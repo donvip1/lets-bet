@@ -15,11 +15,11 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY backend/package*.json ./
+COPY package*.json ./
 
 RUN npm ci --omit=dev
 
-COPY backend/ .
+COPY . .
 
 EXPOSE 5001
 
