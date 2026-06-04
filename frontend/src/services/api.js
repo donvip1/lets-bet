@@ -13,7 +13,21 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+const normalizeApiBaseUrl = (url) => {
+  if (!url) {
+    return 'https://lets-bet-production.up.railway.app';
+  }
+
+  const trimmedUrl = url.replace(/\/$/, '');
+
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
+
+  return `https://${trimmedUrl}`;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(process.env.REACT_APP_API_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
