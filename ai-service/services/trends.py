@@ -161,6 +161,102 @@ def get_mock_entertainment_trends() -> List[dict]:
     ]
 
 
+def get_mock_technology_trends() -> List[dict]:
+    """Return mock technology trends"""
+    return [
+        {
+            "title": "Will a major AI company announce a new flagship model this month?",
+            "category": "technology",
+            "trend_score": random.uniform(82, 96),
+            "url": None,
+        },
+        {
+            "title": "Will a top smartphone brand launch a foldable device this quarter?",
+            "category": "technology",
+            "trend_score": random.uniform(74, 88),
+            "url": None,
+        },
+        {
+            "title": "Will a major app add AI video generation this month?",
+            "category": "technology",
+            "trend_score": random.uniform(78, 92),
+            "url": None,
+        },
+    ]
+
+
+def get_mock_social_trends() -> List[dict]:
+    """Return mock social platform trends"""
+    return [
+        {
+            "title": "Will a TikTok challenge become the top social trend this weekend?",
+            "category": "social",
+            "trend_score": random.uniform(80, 94),
+            "url": None,
+        },
+        {
+            "title": "Will a celebrity controversy dominate Instagram trends this week?",
+            "category": "social",
+            "trend_score": random.uniform(75, 90),
+            "url": None,
+        },
+        {
+            "title": "Will a YouTube creator break a monthly viewership record?",
+            "category": "social",
+            "trend_score": random.uniform(72, 88),
+            "url": None,
+        },
+        {
+            "title": "Will a Facebook discussion become a top local news topic?",
+            "category": "social",
+            "trend_score": random.uniform(65, 82),
+            "url": None,
+        },
+    ]
+
+
+def get_mock_news_trends() -> List[dict]:
+    """Return mock local and international news trends"""
+    return [
+        {
+            "title": "Will a Nigerian headline dominate local news today?",
+            "category": "local news",
+            "trend_score": random.uniform(83, 96),
+            "url": None,
+        },
+        {
+            "title": "Will a major international headline stay top news for 48 hours?",
+            "category": "international news",
+            "trend_score": random.uniform(80, 94),
+            "url": None,
+        },
+        {
+            "title": "Will a newspaper investigation trigger a public response this week?",
+            "category": "news",
+            "trend_score": random.uniform(70, 86),
+            "url": None,
+        },
+    ]
+
+
+def get_mock_crypto_trends() -> List[dict]:
+    """Return mock crypto trends"""
+    return [
+        {
+            "title": "Will Bitcoin close the month above $100K?",
+            "category": "crypto",
+            "trend_score": random.uniform(86, 98),
+            "url": None,
+        },
+        {
+            "title": "Will Ethereum outperform Bitcoin this quarter?",
+            "category": "crypto",
+            "trend_score": random.uniform(76, 90),
+            "url": None,
+        },
+    ]
+
+
 def combine_trends() -> List[dict]:
     """Combine all trends and sort by score"""
     all_trends = []
@@ -168,11 +264,15 @@ def combine_trends() -> List[dict]:
     all_trends.extend(get_mock_finance_trends())
     all_trends.extend(get_mock_politics_trends())
     all_trends.extend(get_mock_entertainment_trends())
+    all_trends.extend(get_mock_technology_trends())
+    all_trends.extend(get_mock_social_trends())
+    all_trends.extend(get_mock_news_trends())
+    all_trends.extend(get_mock_crypto_trends())
 
     # Sort by trend_score descending
     all_trends.sort(key=lambda x: x["trend_score"], reverse=True)
 
-    return all_trends[:20]
+    return all_trends[:30]
 
 
 def generate_bet_suggestions(trends: List[dict]) -> List[dict]:

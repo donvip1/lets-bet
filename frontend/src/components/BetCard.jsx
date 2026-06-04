@@ -16,6 +16,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const BetCard = ({ bet }) => {
+  const isAiTrend = bet.source === 'ai';
+
   const getTimeRemaining = (deadline) => {
     const now = new Date();
     const end = new Date(deadline);
@@ -67,12 +69,18 @@ const BetCard = ({ bet }) => {
 
       <div className="flex justify-between items-center">
         <span className="text-xs text-gray-500 uppercase">{bet.category}</span>
-        <Link
-          to={`/bets/${bet.id}`}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
-        >
-          Join Bet
-        </Link>
+        {isAiTrend ? (
+          <span className="bg-gray-700 text-gray-200 px-4 py-2 rounded text-sm">
+            Trend Preview
+          </span>
+        ) : (
+          <Link
+            to={`/bets/${bet.id}`}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+          >
+            Join Bet
+          </Link>
+        )}
       </div>
     </div>
   );
