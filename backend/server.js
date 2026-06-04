@@ -19,12 +19,14 @@ const dotenv = require("dotenv");
 const http = require("http");
 const socketIo = require("socket.io");
 const { pool } = require("./config/database");
+const { attachWebSocketServer } = require("./services/websocket");
 
 // Load environment variables before bootstrapping the API server.
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+attachWebSocketServer(server);
 
 const normalizeOrigin = (origin) => origin?.replace(/\/$/, "");
 const allowedOrigins = [

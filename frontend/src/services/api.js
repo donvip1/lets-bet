@@ -27,7 +27,7 @@ const normalizeApiBaseUrl = (url) => {
   return `https://${trimmedUrl}`;
 };
 
-const API_BASE_URL = normalizeApiBaseUrl(process.env.REACT_APP_API_URL);
+export const API_BASE_URL = normalizeApiBaseUrl(process.env.REACT_APP_API_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,

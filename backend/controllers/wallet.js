@@ -14,6 +14,10 @@
 // ========================================================
 
 const Wallet = require("../models/Wallet");
+const {
+  notifyDepositCompleted,
+  notifyWithdrawalCompleted,
+} = require("../services/notifications");
 
 const SUPPORTED_CURRENCIES = new Set(["ngn", "usd", "btc", "eth"]);
 const FIAT_CURRENCIES = new Set(["ngn", "usd"]);
@@ -104,6 +108,12 @@ const deposit = async (req, res) => {
         "Mock deposit"
       );
 
+      notifyDepositCompleted(userId, {
+        amount: numericAmount,
+        currency: currencyCode,
+        transactionId: transaction.id,
+      });
+
       return res.json({
         success: true,
         transaction_id: transaction.id,
@@ -186,6 +196,14 @@ const withdraw = async (req, res) => {
       `mock_withdrawal_${userId}_${Date.now()}`,
       `${isMockPaymentMode ? "Mock withdrawal" : "Withdrawal"} to ${destination}`
     );
+
+    if (isMockPaymentMode) {
+      notifyWithdrawalCompleted(userId, {
+        amount: numericAmount,
+        currency: currencyCode,
+        transactionId: transaction.id,
+      });
+    }
 
     return res.json({
       transaction_id: transaction.id,

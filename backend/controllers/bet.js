@@ -17,6 +17,11 @@ const Bet = require("../models/Bet");
 const BetParticipant = require("../models/BetParticipant");
 const Wallet = require("../models/Wallet");
 const AIInsights = require("../services/ai-insights");
+const {
+  notifyBetCreated,
+  notifyBetJoined,
+  notifyBetSettled,
+} = require("../services/notifications");
 
 const SUPPORTED_CURRENCIES = new Set(["ngn", "usd", "btc", "eth"]);
 const ACTIVE_STATUSES = new Set(["OPEN", "LOCKED"]);
@@ -142,6 +147,8 @@ const createBet = async (req, res) => {
       `Stake for bet: ${topic}`
     );
 
+    notifyBetCreated(userId, bet);
+
     return res.status(201).json({ bet });
   } catch (error) {
     // Refund the creator if a later bet creation step fails after wallet deduction.
@@ -230,6 +237,12 @@ const joinBet = async (req, res) => {
       null,
       `Stake for bet: ${bet.topic}`
     );
+
+    notifyBetJoined(userId, { bet, participant });
+
+    if (bet.created_by && String(bet.created_by) !== String(userId)) {
+      notifyBetJoined(bet.created_by, { bet, participant });
+    }
 
     return res.status(201).json({ participant });
   } catch (error) {
@@ -410,6 +423,12 @@ const settleBet = async (req, res) => {
       null,
       `Platform fee for bet: ${bet.topic}`
     );
+
+    notifyBetSettled(winner.user_id, { bet, payout });
+
+    if (bet.created_by && String(bet.created_by) !== String(winner.user_id)) {
+      notifyBetSettled(bet.created_by, { bet, payout: 0 });
+    }
 
     return res.json({ bet, winner, payout });
   } catch (error) {
