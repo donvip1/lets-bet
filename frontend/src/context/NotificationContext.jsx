@@ -23,7 +23,7 @@ import useAuth from './AuthContext';
 import wsService from '../services/websocket';
 
 const NotificationContext = createContext(null);
-const MAX_NOTIFICATIONS = 20;
+const MAX_NOTIFICATIONS = 50;
 
 export const NotificationProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
@@ -71,6 +71,7 @@ export const NotificationProvider = ({ children }) => {
     if (!isAuthenticated || !user?.id) {
       wsService.disconnect({ clearListeners: false });
       setConnectionStatus('disconnected');
+      clearNotifications();
     } else {
       wsService.connect(user.id);
     }
@@ -79,7 +80,7 @@ export const NotificationProvider = ({ children }) => {
       wsService.off('*', addNotification);
       wsService.off('STATUS', handleStatus);
     };
-  }, [addNotification, isAuthenticated, user?.id]);
+  }, [addNotification, clearNotifications, isAuthenticated, user?.id]);
 
   useEffect(() => {
     if (!toast) {
