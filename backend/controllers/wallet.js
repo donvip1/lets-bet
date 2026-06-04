@@ -17,6 +17,7 @@ const Wallet = require("../models/Wallet");
 
 const SUPPORTED_CURRENCIES = new Set(["ngn", "usd", "btc", "eth"]);
 const FIAT_CURRENCIES = new Set(["ngn", "usd"]);
+const isMockPaymentMode = process.env.FLUTTERWAVE_ENV !== "live";
 
 const normalizeCurrency = (currency) => String(currency || "").toLowerCase();
 
@@ -90,6 +91,27 @@ const deposit = async (req, res) => {
   }
 
   try {
+    if (isMockPaymentMode) {
+      await Wallet.updateBalance(userId, normalizedCurrency, numericAmount, "add");
+
+      const transaction = await Wallet.createTransaction(
+        userId,
+        "DEPOSIT",
+        numericAmount,
+        currencyCode,
+        "COMPLETED",
+        `mock_deposit_${userId}_${Date.now()}`,
+        "Mock deposit"
+      );
+
+      return res.json({
+        success: true,
+        transaction_id: transaction.id,
+        payment_url: null,
+        message: "Mock deposit completed",
+      });
+    }
+
     const transaction = await Wallet.createTransaction(
       userId,
       "DEPOSIT",
@@ -160,14 +182,16 @@ const withdraw = async (req, res) => {
       "WITHDRAWAL",
       numericAmount,
       currencyCode,
-      "PENDING",
-      null,
-      `Withdrawal to ${destination}`
+      isMockPaymentMode ? "COMPLETED" : "PENDING",
+      `mock_withdrawal_${userId}_${Date.now()}`,
+      `${isMockPaymentMode ? "Mock withdrawal" : "Withdrawal"} to ${destination}`
     );
 
     return res.json({
       transaction_id: transaction.id,
-      message: "Withdrawal request submitted",
+      message: isMockPaymentMode
+        ? "Mock withdrawal completed"
+        : "Withdrawal request submitted",
     });
   } catch (error) {
     return handleControllerError(res, error);

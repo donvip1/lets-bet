@@ -68,12 +68,15 @@ const Wallet = () => {
         currency: selectedCurrency,
       });
 
-      setSuccessMessage('Deposit request created! Redirecting to payment...');
-      setTimeout(() => {
-        if (response.data.payment_url) {
+      setSuccessMessage(
+        response.data.message || 'Deposit request created successfully!'
+      );
+
+      if (response.data.payment_url) {
+        setTimeout(() => {
           window.open(response.data.payment_url, '_blank');
-        }
-      }, 1000);
+        }, 1000);
+      }
 
       depositForm.reset();
       fetchWalletData();
@@ -311,8 +314,8 @@ const Wallet = () => {
               <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4">
                 <p className="text-yellow-200 text-sm flex items-start">
                   <BanknotesIcon className="h-5 w-5 mr-2 flex-shrink-0" />
-                  Withdrawals are disabled for testing until payout and KYC
-                  controls are implemented.
+                  Mock withdrawals are enabled for testing. Live payouts will
+                  require KYC and payment processor approval.
                 </p>
               </div>
 
