@@ -26,32 +26,37 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+const normalizeOrigin = (origin) => origin?.replace(/\/$/, "");
 const allowedOrigins = [
   "http://localhost:3000",
   process.env.FRONTEND_URL,
-  "https://lets-bet-frontend.vercel.app",
-];
+  "https://lets-bet-seven.vercel.app",
+].filter(Boolean).map(normalizeOrigin);
 
-// Socket.io powers real-time betting updates for connected frontend clients.
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
-
-// Core Express middleware for cross-origin requests and JSON/form payloads.
-app.use(cors({
+const corsOptions = {
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+
+    if (allowedOrigins.indexOf(normalizeOrigin(origin)) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-}));
+};
+
+// Socket.io powers real-time betting updates for connected frontend clients.
+const io = socketIo(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// Core Express middleware for cross-origin requests and JSON/form payloads.
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

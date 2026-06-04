@@ -32,6 +32,15 @@ from services.trends import (
 
 load_dotenv()
 
+frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+allowed_origins = [
+    "http://localhost:3000",
+    "https://lets-bet-seven.vercel.app",
+]
+
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app = FastAPI(
     title="Lets Bet AI Service",
     description="AI-powered trending bet suggestions",
@@ -41,7 +50,7 @@ app = FastAPI(
 # Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

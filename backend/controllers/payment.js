@@ -21,6 +21,7 @@ const SUPPORTED_CURRENCIES = new Set(["NGN", "USD", "BTC", "ETH"]);
 const FIAT_CURRENCIES = new Set(["NGN", "USD"]);
 const CRYPTO_CURRENCIES = new Set(["BTC", "ETH"]);
 const isMockPaymentMode = process.env.FLUTTERWAVE_ENV !== "live";
+const frontendUrl = (process.env.FRONTEND_URL || "https://lets-bet-seven.vercel.app").replace(/\/$/, "");
 
 const normalizeCurrency = (currency) => String(currency || "").toUpperCase();
 
@@ -132,7 +133,7 @@ async function initiateDeposit(req, res) {
       currency: currencyCode,
       email: user.email,
       name: user.name,
-      redirect_url: "http://localhost:3000/wallet",
+      redirect_url: `${frontendUrl}/wallet`,
       tx_ref: txRef,
     });
 
