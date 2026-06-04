@@ -53,11 +53,11 @@ const notifyBetCreated = (userId, bet) => {
   });
 };
 
-const notifyBetJoined = (userId, { bet, participant }) => {
+const notifyBetJoined = (userId, { bet, participant, participantName }) => {
   return sendNotification(userId, {
     type: NOTIFICATION_TYPES.BET_JOINED,
-    title: "Bet joined",
-    message: `A user joined "${bet.topic}".`,
+    title: "New Bet Participant!",
+    message: `${participantName || "A user"} joined your bet: ${bet.topic}`,
     data: {
       betId: bet.id,
       participantId: participant.id,
@@ -67,12 +67,12 @@ const notifyBetJoined = (userId, { bet, participant }) => {
   });
 };
 
-const notifyBetSettled = (userId, { bet, payout }) => {
+const notifyBetSettled = (userId, { bet, result, payout, outcome }) => {
   return sendNotification(userId, {
     type: NOTIFICATION_TYPES.BET_SETTLED,
-    title: "Bet settled",
-    message: `"${bet.topic}" has been settled.`,
-    data: { betId: bet.id, payout },
+    title: "Bet Settled!",
+    message: `Your bet "${bet.topic}" has been settled. Result: ${result}`,
+    data: { betId: bet.id, result, payout, outcome },
   });
 };
 

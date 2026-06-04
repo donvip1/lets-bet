@@ -16,6 +16,7 @@
 const Bet = require("../models/Bet");
 const BetParticipant = require("../models/BetParticipant");
 const Wallet = require("../models/Wallet");
+const User = require("../models/User");
 const AIInsights = require("../services/ai-insights");
 const {
   notifyBetCreated,
@@ -238,10 +239,13 @@ const joinBet = async (req, res) => {
       `Stake for bet: ${bet.topic}`
     );
 
-    notifyBetJoined(userId, { bet, participant });
+    const participantUser = await User.findById(userId);
+    const participantName = participantUser?.name || "A user";
+
+    notifyBetJoined(userId, { bet, participant, participantName });
 
     if (bet.created_by && String(bet.created_by) !== String(userId)) {
-      notifyBetJoined(bet.created_by, { bet, participant });
+      notifyBetJoined(bet.created_by, { bet, participant, participantName });
     }
 
     return res.status(201).json({ participant });
@@ -392,9 +396,12 @@ const settleBet = async (req, res) => {
       return res.status(404).json({ error: "Bet not found" });
     }
 
-    const winner = await BetParticipant.getWinner(betId, result);
+    const participants = await BetParticipant.findByBetId(betId);
+    const winners = participants.filter(
+      (participant) => normalizeOutcome(participant.outcome) === result
+    );
 
-    if (!winner) {
+    if (winners.length === 0) {
       return res.status(400).json({ error: "No winner found" });
     }
 
@@ -403,17 +410,29 @@ const settleBet = async (req, res) => {
     const payout = totalStakes * 0.9;
     const fee = totalStakes * 0.1;
     const currency = normalizeCurrency(bet.currency);
-
-    await Wallet.updateBalance(winner.user_id, currency, payout, "add");
-    await Wallet.createTransaction(
-      winner.user_id,
-      "PAYOUT",
-      payout,
-      toCurrencyCode(currency),
-      "COMPLETED",
-      null,
-      `Payout for bet: ${bet.topic}`
+    const totalWinningStake = winners.reduce(
+      (sum, winner) => sum + Number(winner.stake_amount),
+      0
     );
+
+    for (const winner of winners) {
+      const winnerPayout =
+        totalWinningStake > 0
+          ? (Number(winner.stake_amount) / totalWinningStake) * payout
+          : 0;
+
+      await Wallet.updateBalance(winner.user_id, currency, winnerPayout, "add");
+      await Wallet.createTransaction(
+        winner.user_id,
+        "PAYOUT",
+        winnerPayout,
+        toCurrencyCode(currency),
+        "COMPLETED",
+        null,
+        `Payout for bet: ${bet.topic}`
+      );
+    }
+
     await Wallet.createTransaction(
       null,
       "FEE",
@@ -424,13 +443,21 @@ const settleBet = async (req, res) => {
       `Platform fee for bet: ${bet.topic}`
     );
 
-    notifyBetSettled(winner.user_id, { bet, payout });
+    participants.forEach((participant) => {
+      const participantPayout =
+        normalizeOutcome(participant.outcome) === result && totalWinningStake > 0
+          ? (Number(participant.stake_amount) / totalWinningStake) * payout
+          : 0;
 
-    if (bet.created_by && String(bet.created_by) !== String(winner.user_id)) {
-      notifyBetSettled(bet.created_by, { bet, payout: 0 });
-    }
+      notifyBetSettled(participant.user_id, {
+        bet,
+        result,
+        outcome: participant.outcome,
+        payout: participantPayout,
+      });
+    });
 
-    return res.json({ bet, winner, payout });
+    return res.json({ bet, winners, payout });
   } catch (error) {
     return handleControllerError(res, error);
   }

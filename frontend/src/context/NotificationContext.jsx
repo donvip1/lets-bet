@@ -17,18 +17,16 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import useAuth from './AuthContext';
-import { createNotificationSocket } from '../services/socket';
+import wsService from '../services/websocket';
 
 const NotificationContext = createContext(null);
 const MAX_NOTIFICATIONS = 20;
 
 export const NotificationProvider = ({ children }) => {
-  const { token, isAuthenticated } = useAuth();
-  const socketRef = useRef(null);
+  const { user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -63,33 +61,25 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
-      socketRef.current?.close();
-      socketRef.current = null;
+    const handleStatus = (statusEvent) => {
+      setConnectionStatus(statusEvent.status);
+    };
+
+    wsService.on('*', addNotification);
+    wsService.on('STATUS', handleStatus);
+
+    if (!isAuthenticated || !user?.id) {
+      wsService.disconnect({ clearListeners: false });
       setConnectionStatus('disconnected');
-      return undefined;
+    } else {
+      wsService.connect(user.id);
     }
 
-    const socket = createNotificationSocket({
-      token,
-      onMessage: addNotification,
-      onStatus: setConnectionStatus,
-    });
-
-    socketRef.current = socket;
-
-    const pingInterval = setInterval(() => {
-      if (socket?.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'PING' }));
-      }
-    }, 30000);
-
     return () => {
-      clearInterval(pingInterval);
-      socket?.close();
-      socketRef.current = null;
+      wsService.off('*', addNotification);
+      wsService.off('STATUS', handleStatus);
     };
-  }, [addNotification, isAuthenticated, token]);
+  }, [addNotification, isAuthenticated, user?.id]);
 
   useEffect(() => {
     if (!toast) {

@@ -19,7 +19,7 @@ const dotenv = require("dotenv");
 const http = require("http");
 const socketIo = require("socket.io");
 const { pool } = require("./config/database");
-const { attachWebSocketServer } = require("./services/websocket");
+const { attachWebSocketServer, notify } = require("./services/websocket");
 
 // Load environment variables before bootstrapping the API server.
 dotenv.config();
@@ -117,8 +117,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 server.listen(PORT, () => {
   console.log(`🚀 Lets Bet server running on port ${PORT}`);
+  console.log(`🔌 WebSocket server running on port ${PORT}`);
 });
+
+module.exports.notify = notify;

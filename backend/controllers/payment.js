@@ -16,6 +16,7 @@
 const Wallet = require("../models/Wallet");
 const User = require("../models/User");
 const flutterwave = require("../services/flutterwave");
+const { notifyDepositCompleted } = require("../services/notifications");
 
 const SUPPORTED_CURRENCIES = new Set(["NGN", "USD", "BTC", "ETH"]);
 const FIAT_CURRENCIES = new Set(["NGN", "USD"]);
@@ -187,10 +188,15 @@ async function verifyDeposit(req, res) {
 
     await Wallet.updateBalance(userId, currency.toLowerCase(), amount, "add");
 
+    let completedTransaction = transaction;
+
     if (transaction) {
-      await Wallet.updateTransactionStatus(transaction.id, "COMPLETED");
+      completedTransaction = await Wallet.updateTransactionStatus(
+        transaction.id,
+        "COMPLETED"
+      );
     } else {
-      await Wallet.createTransaction(
+      completedTransaction = await Wallet.createTransaction(
         userId,
         "DEPOSIT",
         amount,
@@ -200,6 +206,12 @@ async function verifyDeposit(req, res) {
         "Verified deposit"
       );
     }
+
+    notifyDepositCompleted(userId, {
+      amount,
+      currency,
+      transactionId: completedTransaction?.id,
+    });
 
     return res.json({
       success: true,
