@@ -59,7 +59,7 @@ When a caveat is fully fixed and verified:
 | 2026-06-05 | Added crypto config, ledger service, withdrawal risk service, crypto routes, and wallet provisioning APIs. | `3f33755` and related commits | Backend import checks and API registration tests passed. |
 | 2026-06-05 | Auto-provisioned crypto wallets on signup and fixed Railway crypto startup crash. | `2e55afd`, `dbbef64`, `8e038ba` | Local `/auth/register` returned `201 Created`; Railway crash caused by Solana dependency was removed. |
 | 2026-06-05 | Added Base deposit scanner, deposit confirmation engine, manual deposit proof API, and deposit worker. | `ce56f2f` | `node --check`, import checks, `git diff --check`, and worker startup scan passed. |
-| 2026-06-05 | Fixed manual deposit API response to return the final credited deposit row. | Current fix commit | `POST /auth/register` returned `201`; `POST /crypto/manual-deposit` returned `200`, `CREDITED`, `amount` 100, `net_amount` 95, `platform_fee` 5, and `confirmations` 12. |
+| 2026-06-05 | Fixed manual deposit API response to return the final credited deposit row. | `ea83b0f` | `POST /auth/register` returned `201`; `POST /crypto/manual-deposit` returned `200`, `CREDITED`, `amount` 100, `net_amount` 95, `platform_fee` 5, and `confirmations` 12. |
 
 ## Verification Commands
 
