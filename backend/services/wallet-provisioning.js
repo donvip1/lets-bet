@@ -336,10 +336,11 @@ class WalletProvisioning {
 }
 
 const walletProvisioning = new WalletProvisioning();
+const autoProvisionOnSignup = walletProvisioning.autoProvisionOnSignup.bind(
+  walletProvisioning
+);
 
 module.exports = walletProvisioning;
 module.exports.encryptPrivateKey = encryptPrivateKey;
 module.exports.decryptPrivateKey = decryptPrivateKey;
-module.exports.autoProvisionOnSignup = (userId) => {
-  return walletProvisioning.autoProvisionOnSignup(userId);
-};
+module.exports.autoProvisionOnSignup = autoProvisionOnSignup;

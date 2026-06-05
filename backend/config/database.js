@@ -29,15 +29,18 @@ const parsePort = (value, fallback) => {
 const sharedPoolConfig = {
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: parsePort(process.env.DB_CONNECTION_TIMEOUT_MS, 10000),
 };
 
-// DATABASE_URL is a full PostgreSQL connection string, so pg expects it as
-// connectionString. Otherwise, fall back to individual local dev settings.
-const poolConfig = process.env.DATABASE_URL
+const connectionString =
+  process.env.RAILWAY_DATABASE_URL || process.env.DATABASE_URL;
+
+// RAILWAY_DATABASE_URL/DATABASE_URL are full PostgreSQL connection strings, so
+// pg expects connectionString. Otherwise, fall back to individual local settings.
+const poolConfig = connectionString
   ? {
       ...sharedPoolConfig,
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
     }
   : {
       ...sharedPoolConfig,
@@ -49,16 +52,23 @@ const poolConfig = process.env.DATABASE_URL
     };
 
 const databaseUrlRequiresSsl = /sslmode=require/i.test(
-  process.env.DATABASE_URL || ""
+  connectionString || ""
+);
+const databaseUrlIsRailwayProxy = /railway|rlwy\.net/i.test(
+  connectionString || ""
 );
 const shouldUseSsl =
-  process.env.DB_SSL === "true" || databaseUrlRequiresSsl;
+  process.env.DB_SSL === "true" ||
+  databaseUrlRequiresSsl ||
+  databaseUrlIsRailwayProxy;
 
 // Railway can provide internal non-SSL URLs or public SSL-required URLs.
 // Set DB_SSL=true or include sslmode=require in DATABASE_URL when SSL is needed.
 if (shouldUseSsl) {
   poolConfig.ssl = {
-    rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== "false",
+    rejectUnauthorized:
+      process.env.DB_SSL_REJECT_UNAUTHORIZED === "true" &&
+      !databaseUrlIsRailwayProxy,
   };
 }
 
