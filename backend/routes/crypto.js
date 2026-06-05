@@ -20,6 +20,7 @@ const { auth } = require("../middleware/auth");
 router.get("/wallets", auth, cryptoController.getUserWallets);
 router.get("/wallets/:network", auth, cryptoController.getWalletByNetwork);
 router.get("/deposits", auth, cryptoController.getDepositHistory);
+router.post("/manual-deposit", auth, cryptoController.manualDepositProof);
 router.post("/withdrawals", auth, cryptoController.requestWithdrawal);
 router.get("/withdrawals", auth, cryptoController.getWithdrawalHistory);
 router.get("/fees", auth, cryptoController.getWithdrawalFees);

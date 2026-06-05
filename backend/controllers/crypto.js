@@ -17,6 +17,7 @@ const walletProvisioning = require("../services/wallet-provisioning");
 const config = require("../services/crypto-config");
 const cryptoLedger = require("../services/crypto-ledger");
 const withdrawalRisks = require("../services/withdrawal-risks");
+const { baseScanner } = require("../services/deposit-scanner");
 const { query } = require("../config/database");
 
 const SUPPORTED_NETWORKS = new Set(["bnb", "sol", "ton", "base"]);
@@ -365,6 +366,86 @@ const getWhitelistedAddresses = async (req, res) => {
   }
 };
 
+const manualDepositProof = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { txHash, fromAddress } = req.body;
+    const network = req.body.network || "base";
+    const amount = parseAmount(req.body.amount);
+
+    // Manual deposits are a testnet-only shortcut; real deposits are scanner-led.
+    if (!config.isTestnetMode()) {
+      return res.status(403).json({
+        success: false,
+        error: "Manual deposits only allowed in testnet mode",
+      });
+    }
+
+    if (network !== "base") {
+      return res.status(400).json({
+        success: false,
+        error: "Manual deposit proof currently supports Base Sepolia only",
+      });
+    }
+
+    if (!txHash || !fromAddress) {
+      return res.status(400).json({
+        success: false,
+        error: "txHash and fromAddress are required",
+      });
+    }
+
+    if (!amount || amount < config.MIN_DEPOSIT_USDT) {
+      return res.status(400).json({
+        success: false,
+        error: `Minimum manual deposit is ${config.MIN_DEPOSIT_USDT} USDT`,
+      });
+    }
+
+    if (amount > config.MAX_DEPOSIT_USDT) {
+      return res.status(400).json({
+        success: false,
+        error: `Maximum manual deposit is ${config.MAX_DEPOSIT_USDT} USDT`,
+      });
+    }
+
+    const wallet = await walletProvisioning.getUserWalletByNetwork(
+      userId,
+      network
+    );
+
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        error: "Wallet not found for this network",
+      });
+    }
+
+    const deposit = await baseScanner.manualDepositProof(
+      txHash,
+      amount,
+      fromAddress,
+      wallet.wallet_address,
+      userId
+    );
+
+    return res.json({
+      success: true,
+      message: "Deposit proof recorded and credited",
+      deposit,
+    });
+  } catch (error) {
+    if (error.code === "23505" || error.code === "DUPLICATE_DEPOSIT_PROOF") {
+      return res.status(409).json({
+        success: false,
+        error: "Deposit proof already exists for this txHash",
+      });
+    }
+
+    return handleControllerError(res, error);
+  }
+};
+
 module.exports = {
   getUserWallets,
   getWalletByNetwork,
@@ -374,4 +455,5 @@ module.exports = {
   getWithdrawalFees,
   whitelistAddress,
   getWhitelistedAddresses,
+  manualDepositProof,
 };
