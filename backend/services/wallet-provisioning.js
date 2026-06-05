@@ -271,6 +271,24 @@ class WalletProvisioning {
       [userId, network]
     );
   }
+
+  async autoProvisionOnSignup(userId) {
+    try {
+      console.log(`Auto-provisioning crypto wallets for user ${userId}`);
+      const wallets = await this.generateAllUserWallets(userId);
+      console.log(
+        `Crypto wallets created for user ${userId}: BNB=${wallets.bnb.address}, SOL=${wallets.sol.address}, TON=${wallets.ton.address}, BASE=${wallets.base.address}`
+      );
+
+      return wallets;
+    } catch (error) {
+      console.error("Failed to auto-provision crypto wallets:", {
+        userId,
+        message: error.message,
+      });
+      throw error;
+    }
+  }
 }
 
 const walletProvisioning = new WalletProvisioning();
@@ -278,3 +296,6 @@ const walletProvisioning = new WalletProvisioning();
 module.exports = walletProvisioning;
 module.exports.encryptPrivateKey = encryptPrivateKey;
 module.exports.decryptPrivateKey = decryptPrivateKey;
+module.exports.autoProvisionOnSignup = (userId) => {
+  return walletProvisioning.autoProvisionOnSignup(userId);
+};

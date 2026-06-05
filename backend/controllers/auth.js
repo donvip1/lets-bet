@@ -18,6 +18,10 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
 const Wallet = require("../models/Wallet");
+const {
+  autoProvisionOnSignup,
+} = require("../services/wallet-provisioning");
+const withdrawalRisks = require("../services/withdrawal-risks");
 
 const TOKEN_EXPIRY = "7d";
 
@@ -53,6 +57,9 @@ const register = async (req, res) => {
     }
 
     const user = await User.createUser(email, password, name);
+    await autoProvisionOnSignup(user.id);
+    await withdrawalRisks.createUserLimits(user.id, "BASIC");
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: TOKEN_EXPIRY,
     });

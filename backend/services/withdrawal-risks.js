@@ -62,6 +62,42 @@ const getOrCreateLimits = async (userId) => {
   return created.rows[0];
 };
 
+const createUserLimits = async (userId, kycTier = DEFAULT_TIER) => {
+  const tier = config.WITHDRAWAL_LIMITS[kycTier] ? kycTier : DEFAULT_TIER;
+  const limits = config.WITHDRAWAL_LIMITS[tier];
+  const result = await query(
+    `
+      INSERT INTO user_withdrawal_limits (
+        user_id,
+        kyc_tier,
+        daily_limit,
+        weekly_limit,
+        monthly_limit,
+        single_withdrawal_max
+      )
+      VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (user_id) DO UPDATE SET
+        kyc_tier = EXCLUDED.kyc_tier,
+        daily_limit = EXCLUDED.daily_limit,
+        weekly_limit = EXCLUDED.weekly_limit,
+        monthly_limit = EXCLUDED.monthly_limit,
+        single_withdrawal_max = EXCLUDED.single_withdrawal_max,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `,
+    [
+      userId,
+      tier,
+      limits.daily,
+      limits.weekly,
+      limits.monthly,
+      limits.single,
+    ]
+  );
+
+  return result.rows[0];
+};
+
 const isAddressWhitelisted = async (userId, toAddress) => {
   const result = await query(
     `
@@ -203,6 +239,7 @@ const getWhitelistedAddresses = async (userId) => {
 };
 
 module.exports = {
+  createUserLimits,
   checkWithdrawalAllowed,
   updateWithdrawalLimits,
   whitelistAddress,
