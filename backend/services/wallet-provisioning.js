@@ -14,7 +14,6 @@
 // ========================================================
 
 const { ethers } = require("ethers");
-const solana = require("@solana/web3.js");
 const TonWeb = require("tonweb");
 const crypto = require("crypto");
 const { query } = require("../config/database");
@@ -22,6 +21,9 @@ const config = require("./crypto-config");
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
+const SOLANA_LAMPORTS_PER_SOL = 1000000000;
+const BASE58_ALPHABET =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 const getEncryptionKey = () => {
   const secret = process.env.ENCRYPTION_KEY || "dev-encryption-key-min-32-chars";
@@ -65,6 +67,41 @@ function decryptPrivateKey(encryptedJson) {
   return decrypted.toString("utf8");
 }
 
+const encodeBase58 = (buffer) => {
+  let value = BigInt(`0x${Buffer.from(buffer).toString("hex")}`);
+  let encoded = "";
+
+  while (value > 0n) {
+    const remainder = value % 58n;
+    value /= 58n;
+    encoded = BASE58_ALPHABET[Number(remainder)] + encoded;
+  }
+
+  for (const byte of buffer) {
+    if (byte !== 0) {
+      break;
+    }
+
+    encoded = `1${encoded}`;
+  }
+
+  return encoded || "1";
+};
+
+const postJsonRpc = async (rpcUrl, body) => {
+  const response = await fetch(rpcUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`RPC request failed with status ${response.status}`);
+  }
+
+  return response.json();
+};
+
 const toWalletResponse = (wallet) => ({
   network: wallet.network,
   wallet_address: wallet.wallet_address,
@@ -89,13 +126,13 @@ class WalletProvisioning {
   }
 
   async generateSolanaWallet() {
-    const keypair = solana.Keypair.generate();
+    const keyPair = TonWeb.utils.nacl.sign.keyPair();
 
     return {
       network: "sol",
-      address: keypair.publicKey.toString(),
-      privateKey: encryptPrivateKey(Buffer.from(keypair.secretKey).toString("hex")),
-      publicKey: keypair.publicKey.toString(),
+      address: encodeBase58(keyPair.publicKey),
+      privateKey: encryptPrivateKey(Buffer.from(keyPair.secretKey).toString("hex")),
+      publicKey: encodeBase58(keyPair.publicKey),
     };
   }
 
@@ -244,11 +281,18 @@ class WalletProvisioning {
     }
 
     if (network === "sol") {
-      const connection = new solana.Connection(rpcUrl);
-      const publicKey = new solana.PublicKey(address);
-      const balance = await connection.getBalance(publicKey);
+      const result = await postJsonRpc(rpcUrl, {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getBalance",
+        params: [address],
+      });
 
-      return balance / solana.LAMPORTS_PER_SOL;
+      if (result.error) {
+        throw new Error(result.error.message || "Solana balance request failed");
+      }
+
+      return Number(result.result?.value || 0) / SOLANA_LAMPORTS_PER_SOL;
     }
 
     if (network === "ton") {
