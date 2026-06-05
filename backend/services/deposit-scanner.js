@@ -441,7 +441,12 @@ class DepositScanner {
 
     await this.creditUserDeposit(deposit.id);
 
-    return deposit;
+    const finalDeposit = await query(
+      "SELECT * FROM crypto_deposits WHERE id = $1",
+      [deposit.id]
+    );
+
+    return finalDeposit.rows[0] || deposit;
   }
 }
 

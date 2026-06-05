@@ -24,7 +24,7 @@ When a caveat is fully fixed and verified:
 | Area | Status | Notes |
 | --- | --- | --- |
 | Backend API | Working locally | Auth/register fixed after crypto wallet provisioning changes. |
-| Railway backend | Deploys from `origin/main` | Last pushed backend crypto deposit work is `ce56f2f`. |
+| Railway backend | Deploys from `origin/main` | See `Completed` for the latest verified backend work. |
 | Crypto Phase 6C-1 | Complete | Schema, ledger foundation, crypto config, and testnet mode are in place. |
 | Crypto Phase 6C-2 | Complete with caveats | User crypto wallets auto-provision on signup; frontend crypto wallet UI is still pending. |
 | Crypto Phase 6C-3 | Implemented for testnet/manual testing | Scanner, worker, confirmation engine, idempotency, and manual deposit proof API are in place. |
@@ -37,7 +37,7 @@ When a caveat is fully fixed and verified:
 | CAV-002 | Treasury confirmation | Testnet treasury confirmation is currently automatic after confirmations/manual proof. | Good for testnet, but not production-grade treasury proof yet. | Build treasury sweep verification with sweep tx hash, treasury wallet balance/proof checks, retry, and manual review fallback. | Open |
 | CAV-003 | Worker deployment | `scripts/deposit-worker.js` runs only when started as a separate process. | Deposits will not be scanned continuously unless the worker is running. | Add Railway worker service/process configuration for the deposit worker. | Open |
 | CAV-004 | Crypto frontend | Users cannot see crypto wallets in the frontend yet. | Backend APIs exist, but customers cannot test crypto deposit addresses from UI. | Build crypto wallet page, network tabs, copy address, QR code, deposit history, and withdrawal UI. | Open |
-| CAV-005 | Persistent notifications table | Some backend notification writes are optional because `notifications` table may not exist in all environments. | Realtime notifications work, but durable notification history may be incomplete. | Add or verify persistent `notifications` schema and migration. | Open |
+| CAV-005 | Persistent notifications table | Some backend notification writes are optional because `notifications` table may not exist in all environments. | Realtime notifications work, but durable notification history may be incomplete; this was observed during manual deposit testing. | Add or verify persistent `notifications` schema and migration. | Open |
 | CAV-006 | SOL/TON/BNB scanners | Non-Base scanner adapters are placeholders/not fully implemented. | Mainnet or multi-network scanning is not ready. | Build BNB, Solana, and TON scanner adapters with network-specific idempotency keys. | Open |
 
 ## Next Actions
@@ -59,6 +59,7 @@ When a caveat is fully fixed and verified:
 | 2026-06-05 | Added crypto config, ledger service, withdrawal risk service, crypto routes, and wallet provisioning APIs. | `3f33755` and related commits | Backend import checks and API registration tests passed. |
 | 2026-06-05 | Auto-provisioned crypto wallets on signup and fixed Railway crypto startup crash. | `2e55afd`, `dbbef64`, `8e038ba` | Local `/auth/register` returned `201 Created`; Railway crash caused by Solana dependency was removed. |
 | 2026-06-05 | Added Base deposit scanner, deposit confirmation engine, manual deposit proof API, and deposit worker. | `ce56f2f` | `node --check`, import checks, `git diff --check`, and worker startup scan passed. |
+| 2026-06-05 | Fixed manual deposit API response to return the final credited deposit row. | Current fix commit | `POST /auth/register` returned `201`; `POST /crypto/manual-deposit` returned `200`, `CREDITED`, `amount` 100, `net_amount` 95, `platform_fee` 5, and `confirmations` 12. |
 
 ## Verification Commands
 
@@ -115,3 +116,19 @@ Notes:
 - Base Sepolia only for now.
 - Use a unique `txHash` every time.
 - Duplicate `txHash` returns `409` and must not double-credit the wallet.
+
+Expected success response for a 100 USDT manual proof:
+
+```json
+{
+  "success": true,
+  "message": "Deposit proof recorded and credited",
+  "deposit": {
+    "status": "CREDITED",
+    "amount": 100,
+    "net_amount": 95,
+    "platform_fee": 5,
+    "confirmations": 12
+  }
+}
+```
