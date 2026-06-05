@@ -69,12 +69,14 @@ app.set("db", pool);
 const authRoutes = require("./routes/auth");
 const betRoutes = require("./routes/bet");
 const walletRoutes = require("./routes/wallet");
+const cryptoRoutes = require("./routes/crypto");
 const adminRoutes = require("./routes/admin");
 const paymentRoutes = require("./routes/payment");
 
 app.use("/auth", authRoutes);
 app.use("/bets", betRoutes);
 app.use("/wallet", walletRoutes);
+app.use("/crypto", cryptoRoutes);
 app.use("/admin", adminRoutes);
 app.use("/payment", paymentRoutes);
 
